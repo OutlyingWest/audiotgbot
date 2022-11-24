@@ -1,4 +1,4 @@
-<img height="30em" src="https://github.com/OutlyingWest/audiotgbot/tree/main/tgbot/data/pictures/marshal_pic_for_bot.jpeg" align="center" style="max-width: 100%;">
+<img height="30em" src="https://github.com/OutlyingWest/audiotgbot/a08b4a9314b117abbcc5200c4811c1fb970ca61a/marshal_pic_for_bot.jpeg" align="center" style="max-width: 100%;">
 This is a Telegram bot for audio files conversion.
 
 This bot was created for personal use.
