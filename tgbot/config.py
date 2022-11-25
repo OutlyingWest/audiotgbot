@@ -18,6 +18,11 @@ class TgBot:
     admin_ids: list[int]
     use_redis: bool
 
+@dataclass
+class FilePaths:
+    input_path: str
+    output_path: str
+
 
 @dataclass
 class Miscellaneous:
@@ -28,6 +33,7 @@ class Miscellaneous:
 class Config:
     tg_bot: TgBot
     db: DbConfig
+    sound_file_path: FilePaths
     misc: Miscellaneous
 
 
@@ -47,5 +53,9 @@ def load_config(path: str = None):
             user=env.str('DB_USER'),
             database=env.str('DB_NAME')
         ),
-        misc=Miscellaneous()
+        sound_file_path=FilePaths(
+            input_path=env.str('INPUT_AUDIO_FILES_PATH'),
+            output_path=env.str('OUTPUT_AUDIO_FILES_PATH')
+        ),
+        misc=Miscellaneous(),
     )
