@@ -15,14 +15,17 @@ async def choose_format(message: Message, state: FSMContext):
     await message.reply(f"You chose the format: {message.text}")
     async with state.proxy() as sound_data:
         sound_data['format'] = message.text.lstrip('/')
+
     await SoundStates.get_sound.set()
 
 
 async def get_audio(message: Message, state: FSMContext):
     """ If user upload a sound file"""
+
     audio_file = await message.audio.get_file()
+    audio_id = message.audio.file_id
     sound_format = await UserLogic.converse(audio_file, state)
-    await message.reply(f"It's an audio!\nIt will conversed in format: {sound_format}")
+    await message.reply(f"It's an audio!\nIt will conversed to format: {sound_format}")
     await SoundStates.get_format.set()
 
 
@@ -30,8 +33,9 @@ async def get_voice(message: Message, state: FSMContext):
     """ If user upload a voice message"""
 
     voice_file = await message.voice.get_file()
+    voice_id = message.voice.file_id
     sound_format = await UserLogic.converse(voice_file, state)
-    await message.reply(f"It's a voice!\nIt will conversed in format: {sound_format}")
+    await message.reply(f"It's a voice!\nIt will conversed to format: {sound_format}")
     await SoundStates.get_format.set()
 
 
