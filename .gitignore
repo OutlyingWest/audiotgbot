@@ -61,3 +61,19 @@ venv.bak/
 .pyre/
 .idea/*
 .env
+
+# Files in data ignore
+#     in download:
+tgbot/data/audio/download/*
+# But not ignore
+tgbot/data/audio/download/!info.txt
+#     in upload:
+tgbot/data/audio/upload/*
+# But not ignore
+tgbot/data/audio/upload/!info.txt
+#     in pictures:
+tgbot/data/pictures/*
+# But not ignore
+tgbot/data/pictures/info.txt
+
+
