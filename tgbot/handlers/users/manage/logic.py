@@ -1,4 +1,5 @@
 from aiogram.dispatcher import FSMContext
+from aiogram.types import Message
 from aiogram import Bot
 from tgbot.misc import commands
 from pathlib import Path
@@ -31,9 +32,47 @@ class UserLogic:
             sound_format = sn['format']
             print(sound_format)
 
-        if sound_format is not 'other':
+        if sound_format != 'other':
             await cls._handle_input_file(sound_file, sound_format)
         else:
             pass
 
         return sound_format
+
+
+
+    # -------------------------------------
+async def handle_input_file(message: Message, file: File, file_name: str):
+    """ Create a directory for an audio file if it has not been created yet
+        and download the audio file in this directory
+    """
+    path = message.bot.get('config').sound_file_path.input_path
+    Path(path).mkdir(parents=True, exist_ok=True)
+    await message.bot.download_file(file_path=file.file_path, destination=f"{path}{file_name}")
+
+
+async def converse(message: Message, sound_file: File, sound_id, sound_info: FSMContext):
+    """ Execute the conversion to the chose sound format"""
+    async with sound_info.proxy() as si:
+        chosen_format = si['format']
+        print(chosen_format)
+
+    # Assemble the file name in download directory
+    try:   # Check if file name exist - for audio files only
+        file_name = message.audio.file_name
+        sound_name = f'{sound_id}_{file_name}'
+    except AttributeError:
+        sound_name = f'voice_{sound_id}.ogg'
+
+    await handle_input_file(message, sound_file, sound_name)
+
+    return chosen_format
+
+
+async def handle_conversed_file():
+    sound_file = None
+    return sound_file
+
+
+async def save_to_db():
+    pass

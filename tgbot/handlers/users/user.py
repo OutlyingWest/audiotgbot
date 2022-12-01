@@ -3,10 +3,12 @@ from aiogram.types import Message, ContentTypes
 from aiogram.dispatcher import FSMContext
 from tgbot.states.states import SoundStates
 from tgbot.misc import commands
-from tgbot.handlers.users.manage.logic import UserLogic
+from tgbot.handlers.users.manage import logic
 
 
 async def user_start(message: Message):
+    print(message.from_user.first_name)
+    print(message.from_user.id)
     await message.reply("Hello, user!")
     await SoundStates.get_format.set()
 
@@ -24,8 +26,9 @@ async def get_audio(message: Message, state: FSMContext):
 
     audio_file = await message.audio.get_file()
     audio_id = message.audio.file_id
-    sound_format = await UserLogic.converse(audio_file, state)
-    await message.reply(f"It's an audio!\nIt will conversed to format: {sound_format}")
+    # TODO try to no get the format
+    chosen_format = await logic.converse(message, audio_file, audio_id, state)
+    await message.reply(f"It's an audio!\nIt will conversed to format: {chosen_format}")
     await SoundStates.get_format.set()
 
 
@@ -34,7 +37,7 @@ async def get_voice(message: Message, state: FSMContext):
 
     voice_file = await message.voice.get_file()
     voice_id = message.voice.file_id
-    sound_format = await UserLogic.converse(voice_file, state)
+    sound_format = await logic.converse(message, voice_file, voice_id, state)
     await message.reply(f"It's a voice!\nIt will conversed to format: {sound_format}")
     await SoundStates.get_format.set()
 
