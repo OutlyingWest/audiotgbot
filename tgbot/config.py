@@ -11,6 +11,10 @@ class DbConfig:
     user: str
     database: str
 
+@dataclass
+class SQLiteDbConfig:
+    database: str
+    tables: list[str]
 
 @dataclass
 class TgBot:
@@ -33,6 +37,7 @@ class Miscellaneous:
 class Config:
     tg_bot: TgBot
     db: DbConfig
+    sqlite_db: SQLiteDbConfig
     sound_file_path: FilePaths
     misc: Miscellaneous
 
@@ -52,6 +57,10 @@ def load_config(path: str = None):
             password=env.str('DB_PASS'),
             user=env.str('DB_USER'),
             database=env.str('DB_NAME')
+        ),
+        sqlite_db=SQLiteDbConfig(
+            database=env.str('SQLITE_DB_NAME'),
+            tables=env.list('SQLITE_DB_TABLES')
         ),
         sound_file_path=FilePaths(
             input_path=env.str('INPUT_AUDIO_FILES_PATH'),

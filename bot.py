@@ -6,13 +6,12 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.contrib.fsm_storage.redis import RedisStorage2
 
 from tgbot.config import load_config
+from tgbot.data.database.handler import SQLiteHandler
 from tgbot.filters.admin import AdminFilter
 from tgbot.handlers.admin import register_admin
 from tgbot.handlers.echo import register_echo
 from tgbot.handlers.users.user import register_user
 from tgbot.middlewares.environment import EnvironmentMiddleware
-
-from tgbot.handlers.users.manage.logic import UserLogic
 
 logger = logging.getLogger(__name__)
 
@@ -48,8 +47,9 @@ async def main():
 
     # After that accesseble - bot.get('config') in handlers for example
     bot['config'] = config
-    # Get the bot instance to use in handlers
-    UserLogic.get_bot_instance(bot)
+
+    sql_handler = SQLiteHandler(bot)
+    sql_handler.create_tables()
 
     # Order is important
     register_all_middlewares(dp, config)

@@ -75,5 +75,7 @@ tgbot/data/audio/upload/!info.txt
 tgbot/data/pictures/*
 # But not ignore
 tgbot/data/pictures/info.txt
+#     in database:
+tgbot/data/database/*.db
 
 
