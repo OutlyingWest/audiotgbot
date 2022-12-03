@@ -1,3 +1,4 @@
+from collections import defaultdict
 import sqlite3
 import logging
 
@@ -12,15 +13,17 @@ class SQLiteHandler:
         Also this class provide ability to interact to your own
         databases. In this case you must enter the name of your
         database, and names of your tables which will be created
-        with connection object instance"""
+        with connection object instance
+        """
         if obj:
             database_name, tables = self.get_config(obj)
         elif not database_name or not tables:
             raise ValueError('Input "database_name" and "tables" args if you have not obj with bot instance')
-
         self.tables = tables
         self.conn = sqlite3.connect(database_name, timeout=timeout)
         self.cur = self.conn.cursor()
+        self.conn.execute("PRAGMA foreign_keys = ON;")
+        self.conn.commit()
 
     async def exists_table(self, name: str):
         """Returns bool - answer the table exist or not"""
@@ -30,7 +33,8 @@ class SQLiteHandler:
     @staticmethod
     def get_config(obj):
         """Load config from .env file through bot instance
-            getting by obj.bot or bot"""
+        getting by obj.bot or bot
+        """
         try:
             config = obj.bot.get('config')
             database_name = config.sqlite_db.database
@@ -47,7 +51,6 @@ class SQLiteHandler:
 
 
     def create_tables(self, tables=None):
-        self.conn.execute("PRAGMA foreign_keys = 1")
         if not tables:
             users_table, audio_table, *other_tables = self.tables
             if other_tables:
@@ -59,19 +62,76 @@ class SQLiteHandler:
             self.conn.commit()
 
             self.cur.execute("""CREATE TABLE IF NOT EXISTS {}(
-            tg_user_id INT NOT NULL PRIMARY KEY,
-            tg_id TEXT NOT NULL,
+            tg_id TEXT NOT NULL PRIMARY KEY,
+            tg_user_id INT NOT NULL,
             FOREIGN KEY (tg_user_id) REFERENCES users(tg_id));""".format(audio_table))
             self.conn.commit()
 
-    def insert_to_exiting_table(self, table_name):
+    def insert_to_exiting_table(self, table_name, **kwargs):
         """This method provide the ability to insert one line of data
-        to exiting table from the list self.tables"""
+        to users table if it contains in the list self.tables
+        Parameter names for "users" table: telegram_id: int=..., first_user_name: str=...
+        Parameter names for "audio" table: telegram_file_id: str=..., tg_user_id: int=...
+        """
+        if table_name in self.tables:
+            if table_name == 'users':
+                if 'telegram_id' in kwargs.keys() and 'first_user_name' in kwargs.keys():
+                    telegram_id = kwargs['telegram_id']
+                    first_user_name = kwargs['first_user_name']
+                    self.cur.execute("""INSERT INTO users(tg_id, first_name)
+                    VALUES (?, ?);""", (telegram_id, first_user_name))
+                else:
+                    raise ValueError('''Wrong parameter names for users table.
+                    Right: telegram_id: int=..., first_user_name: str=...''')
+
+            elif table_name == 'audio':
+                if 'telegram_file_id' in kwargs.keys() and 'tg_user_id' in kwargs.keys():
+                    telegram_file_id = kwargs['telegram_file_id']
+                    tg_user_id = kwargs['tg_user_id']
+                    self.cur.execute("""INSERT INTO audio(tg_id, tg_user_id)
+                    VALUES (?, ?);""", (telegram_file_id, tg_user_id))
+                else:
+                    raise ValueError('''Wrong parameter names for users table.
+                    Right: telegram_file_id: str=..., tg_user_id: int=...''')
+            else:
+                raise ValueError('Tables exclude users and audio is not maintain yet')
+
+            self.conn.commit()
+
+    def get_users_data(self, table_name, **kwargs):
+        """This method provide the ability to get all data
+        about users and put it into the dictionary which returns
+        by this method
+        example of return value:
+        defaultdict(<class 'list'>, {(1, 'Alex'): ['asdfasaHLUHJHLHLJhljh'], ...}
+        where {(tg_user_id, 'first_name'): ['tg_file_id_1', 'tg_file_id_2', ...]) ...}
+        """
+        select_query = self.cur.execute("""SELECT users.tg_id AS tg_id,
+        users.first_name,
+        audio.tg_id
+        FROM users JOIN audio
+        ON users.tg_id = audio.tg_user_id;""")
+        users_data = select_query.fetchall()
+
+        users_dict = defaultdict(list)
+        for *user_alias, file_id in users_data:
+            users_dict[tuple(user_alias)].append(file_id)
+
+        return users_dict
+
+
+    def get_from_exciting_table(self, table_name, **kwargs):
+        """This method provide the ability to get one line of data
+        from users table if it contains in the list self.tables
+        """
         pass
 
-    def get_from_exiting_table(self, table_name):
-        """This method provide the ability to get one line of data
-        from exiting table of list self.tables"""
+    def delete_from_exciting_table(self, table_name):
+        """This method provide the ability to delete one string
+        from exciting table
+        """
+
+        pass
 
     def close_connection(self):
         self.conn.close()
