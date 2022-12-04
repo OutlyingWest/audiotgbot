@@ -62,9 +62,9 @@ class SQLiteHandler:
             self.conn.commit()
 
             self.cur.execute("""CREATE TABLE IF NOT EXISTS {}(
-            tg_id TEXT NOT NULL PRIMARY KEY,
-            tg_user_id INT NOT NULL,
-            FOREIGN KEY (tg_user_id) REFERENCES users(tg_id));""".format(audio_table))
+    tg_id TEXT NOT NULL PRIMARY KEY,
+    tg_user_id INT NOT NULL,
+    FOREIGN KEY (tg_user_id) REFERENCES users(tg_id));""".format(audio_table))
             self.conn.commit()
 
     def insert_to_exiting_table(self, table_name, **kwargs):
@@ -78,8 +78,11 @@ class SQLiteHandler:
                 if 'telegram_id' in kwargs.keys() and 'first_user_name' in kwargs.keys():
                     telegram_id = kwargs['telegram_id']
                     first_user_name = kwargs['first_user_name']
-                    self.cur.execute("""INSERT INTO users(tg_id, first_name)
-                    VALUES (?, ?);""", (telegram_id, first_user_name))
+                    try:
+                        self.cur.execute("""INSERT INTO users(tg_id, first_name)
+                        VALUES (?, ?);""", (telegram_id, first_user_name))
+                    except sqlite3.IntegrityError:
+                        handler_logger.info(f'User - id: {telegram_id}, name: {first_user_name} already exists')
                 else:
                     raise ValueError('''Wrong parameter names for users table.
                     Right: telegram_id: int=..., first_user_name: str=...''')
@@ -88,8 +91,11 @@ class SQLiteHandler:
                 if 'telegram_file_id' in kwargs.keys() and 'tg_user_id' in kwargs.keys():
                     telegram_file_id = kwargs['telegram_file_id']
                     tg_user_id = kwargs['tg_user_id']
-                    self.cur.execute("""INSERT INTO audio(tg_id, tg_user_id)
-                    VALUES (?, ?);""", (telegram_file_id, tg_user_id))
+                    try:
+                        self.cur.execute("""INSERT INTO audio(tg_id, tg_user_id)
+                        VALUES (?, ?);""", (telegram_file_id, tg_user_id))
+                    except sqlite3.IntegrityError:
+                        handler_logger.info(f'File - id: {telegram_file_id}, for user(id): {tg_user_id} already exists')
                 else:
                     raise ValueError('''Wrong parameter names for users table.
                     Right: telegram_file_id: str=..., tg_user_id: int=...''')
@@ -98,7 +104,7 @@ class SQLiteHandler:
 
             self.conn.commit()
 
-    def get_users_data(self, table_name, **kwargs):
+    def get_users_data(self):
         """This method provide the ability to get all data
         about users and put it into the dictionary which returns
         by this method

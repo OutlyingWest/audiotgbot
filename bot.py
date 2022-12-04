@@ -13,6 +13,8 @@ from tgbot.handlers.echo import register_echo
 from tgbot.handlers.users.user import register_user
 from tgbot.middlewares.environment import EnvironmentMiddleware
 
+from tgbot.data.database.handler import SQLiteHandler
+
 logger = logging.getLogger(__name__)
 
 
@@ -48,6 +50,7 @@ async def main():
     # After that accesseble - bot.get('config') in handlers for example
     bot['config'] = config
 
+    # Creation of tables for users
     sql_handler = SQLiteHandler(bot)
     sql_handler.create_tables()
 

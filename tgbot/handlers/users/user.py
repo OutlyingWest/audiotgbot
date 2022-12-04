@@ -1,15 +1,23 @@
 from aiogram import Dispatcher
 from aiogram.types import Message, ContentTypes
 from aiogram.dispatcher import FSMContext
+
 from tgbot.states.states import SoundStates
 from tgbot.misc import commands
 from tgbot.handlers.users.manage import logic
+from tgbot.data.database.handler import SQLiteHandler
 
 
 async def user_start(message: Message):
-    print(message.from_user.first_name)
-    print(message.from_user.id)
+    user_id = message.from_user.id
+    first_name = message.from_user.first_name
+    print(user_id)
+    print(first_name)
     await message.reply("Hello, user!")
+    # Creation of a database connection to add usr name and tg-id
+    sql_handler = SQLiteHandler(message)
+    # Insert user data to table "users"
+    sql_handler.insert_to_exiting_table('users', telegram_id=user_id, first_user_name=first_name)
     await SoundStates.get_format.set()
 
 
