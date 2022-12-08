@@ -1,3 +1,6 @@
+import asyncio
+import logging
+from collections import defaultdict
 from aiogram.dispatcher import FSMContext
 from aiogram.types import Message
 from tgbot.misc import commands
@@ -6,6 +9,7 @@ from aiogram.types import File
 
 from tgbot.data.database.handler import SQLiteHandler
 
+logic_logger = logging.getLogger(__name__)
 
 async def add_file_for_current_user(message: Message, user_id, file_id):
     """This function gets the user id and input a file id for addition in database
@@ -18,13 +22,15 @@ async def add_file_for_current_user(message: Message, user_id, file_id):
 
 
 
-async def handle_input_file(message: Message, file: File, file_name: str):
+async def handle_input_file(message: Message, file: File, file_name: str) -> bool:
     """ Create a directory for an audio file if it has not been created yet
         and download the audio file in this directory
         """
     path = message.bot.get('config').sound_file_path.input_path
     Path(path).mkdir(parents=True, exist_ok=True)
-    await message.bot.download_file(file_path=file.file_path, destination=f"{path}{file_name}")
+    file = await message.bot.download_file(file_path=file.file_path, destination=f"{path}{file_name}")
+
+    return file is not None
 
 
 async def converse(message: Message, sound_file: File, sound_id, sound_info: FSMContext):
@@ -41,10 +47,35 @@ async def converse(message: Message, sound_file: File, sound_id, sound_info: FSM
     except AttributeError:
         sound_name = f'voice_{sound_id}.ogg'
 
-    await add_file_for_current_user(message, user_id, sound_id)
-    await handle_input_file(message, sound_file, sound_name)
+    upload_tasks = [asyncio.create_task(add_file_for_current_user(message, user_id, sound_id)),
+                    asyncio.create_task(handle_input_file(message, sound_file, sound_name)),
+                    ]
+    upload_tasks_done, _ = await asyncio.wait(upload_tasks, return_when=asyncio.ALL_COMPLETED)
+
+    if upload_tasks_done:
+        handle_conversion(message)
+    else:
+        await message.reply('Something went wrong on file downloading!')
 
     return chosen_format
+
+
+def handle_conversion(message: Message, user_id, file_id):
+    """
+
+    """
+    sql_handler = SQLiteHandler(message)
+    users_data_dict: defaultdict = sql_handler.get_users_data()
+
+    for user, tg_file_id in users_data_dict.items():
+        user_tg_id, _ = user
+        if user_tg_id == user_id and tg_file_id == file_id:
+            # TODO: insert conv logic here
+            break
+    else:
+        logic_logger.info("handle_conversion() can not find the user or file")
+    print('Done!')
+    # TODO: think about returnable value
 
 
 async def handle_conversed_file():
