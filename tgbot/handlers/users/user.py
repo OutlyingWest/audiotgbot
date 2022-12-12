@@ -22,9 +22,10 @@ async def user_start(message: Message):
 
 
 async def choose_format(message: Message, state: FSMContext):
-    await message.reply(f"You chose the format: {message.text}")
+    sound_format = message.text.lstrip('/')
+    await message.reply(f"You chose the format: {sound_format}")
     async with state.proxy() as sound_data:
-        sound_data['format'] = message.text.lstrip('/')
+        sound_data['format'] = sound_format
 
     await SoundStates.get_sound.set()
 
