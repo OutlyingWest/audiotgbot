@@ -40,7 +40,6 @@ async def converse(message: Message, sound_file: File, sound_id, sound_info: FSM
     """ Execute the conversion to the chose sound format"""
     async with sound_info.proxy() as si:
         chosen_format = si['format']
-        print(chosen_format)
 
     user_id = message.from_user.id
     # Assemble the file name in download directory
@@ -55,7 +54,7 @@ async def converse(message: Message, sound_file: File, sound_id, sound_info: FSM
     download_tasks_done, _ = await asyncio.wait(download_tasks, return_when=asyncio.ALL_COMPLETED)
     is_conv_done = False
     if download_tasks_done:
-        is_conv_done = handle_conversion(message, user_id, sound_id, chosen_format)
+        is_conv_done = handle_conversion(message, user_id, sound_id, chosen_format, bitrate="128k")
     else:
         await message.reply('Something went wrong on file downloading!')
 
@@ -64,11 +63,11 @@ async def converse(message: Message, sound_file: File, sound_id, sound_info: FSM
     return chosen_format
 
 
-def handle_conversion(message: Message, user_id, file_id: str, chosen_format: str):
+def handle_conversion(message: Message, user_id, file_id: str, chosen_format="mp3", bitrate="128k"):
     """ Perform the conversion of audio file. For this function finds file
         name in download directory and converse it. After that take file
         to the upload directory.
-        Download and upload directory defines in config .env file
+        Note 1: Download and upload directory defines in config .env file
         :return: file format defined by user if conversion is done,
                  None if it is not.
         """
@@ -92,28 +91,29 @@ def handle_conversion(message: Message, user_id, file_id: str, chosen_format: st
                               if re.search(pattern=f'.*{tg_file_id}.*', string=sound_name)]
                 sound_name_str = ''
                 if len(sound_name) == 1:
-                    print(sound_name)
                     sound_name_str = str(sound_name)
                     sound_name_str = sound_name_str.strip("[]'")
-                    print(sound_name_str)
                     is_file_name_correct = True
-                # Creation of audio file instance to converse
-                sound = AudioSegment.from_file(download_path + sound_name_str)
-                # Strip a file format
-                sound_name_str_no_fmt = sound_name_str.split('.')[0]
-                # Conversion and export to upload directory
-                sound.export(f'{upload_path}{sound_name_str_no_fmt}.{chosen_format}',
-                             format=chosen_format,
-                             bitrate="128k")
-                user_found = True
+                try:
+                    # Creation of audio file instance to converse
+                    sound = AudioSegment.from_file(download_path + sound_name_str)
+                    # Strip a file format
+                    sound_name_str_no_fmt = sound_name_str.split('.')[0]
+                    # Conversion and export to upload directory
+                    sound.export(f'{upload_path}{sound_name_str_no_fmt}.{chosen_format}',
+                                 format=chosen_format,
+                                 bitrate=bitrate)
+                    user_found = True
+                except ValueError:
+                    logic_logger.info("Conversion failed")
                 break
         if user_found:
             break
     else:
-        logic_logger.info("program can not find the user or file")
+        logic_logger.info("Program can not find the user or file")
 
     return is_file_name_correct
 
 
-
-
+def delete_elder_files_for_current_user():
+    pass
