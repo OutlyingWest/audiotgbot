@@ -98,9 +98,9 @@ def handle_conversion(message: Message, user_id, file_id: str, chosen_format="mp
                     # Creation of audio file instance to converse
                     sound = AudioSegment.from_file(download_path + sound_name_str)
                     # Strip a file format
-                    sound_name_str_no_fmt = sound_name_str.split('.')[0]
+                    sound_name_str_no_format = sound_name_str.split('.')[0]
                     # Conversion and export to upload directory
-                    sound.export(f'{upload_path}{sound_name_str_no_fmt}.{chosen_format}',
+                    sound.export(f'{upload_path}{sound_name_str_no_format}.{chosen_format}',
                                  format=chosen_format,
                                  bitrate=bitrate)
                     user_found = True

@@ -62,9 +62,9 @@ class SQLiteHandler:
             self.conn.commit()
 
             self.cur.execute("""CREATE TABLE IF NOT EXISTS {}(
-    tg_id TEXT NOT NULL PRIMARY KEY,
-    tg_user_id INT NOT NULL,
-    FOREIGN KEY (tg_user_id) REFERENCES users(tg_id));""".format(audio_table))
+                tg_id TEXT NOT NULL PRIMARY KEY,
+                tg_user_id INT NOT NULL,
+                FOREIGN KEY (tg_user_id) REFERENCES users(tg_id));""".format(audio_table))
             self.conn.commit()
 
     def insert_to_exiting_table(self, table_name, **kwargs):
