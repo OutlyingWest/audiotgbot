@@ -5,16 +5,16 @@
     <p>
         This is a Telegram bot for audio files conversion.<br/>
         This bot was created for personal use.<br/>
-        Sometimes I like to play guitar and often record the result<br/>
-        in the form of voice messages to work on mistakes and save interesting ideas.<br/>
+        Sometimes I like to play the guitar and often record the result<br/>
+        in a voice message form to work on mistakes and save interesting ideas.<br/>
         <br/>
-        This bot designed to help save my voice messages in more convenient formats<br/>
-        and also store them in a single database.<br/>
+        This bot designed to help saving my voice messages in more convenient formats<br/>
+        and also store them in a common database.<br/>
     <p/>
 </p>
 <p>
     Basic functionality:<br/>
     &bull; Authomatically ability to converse voice message to .mp3 and send .mp3 file back to a bot user.<br/>
     &bull; Conversions from .ogg to .mp3.<br/>
-    &bull; Other format of conversions or functionality may be added later...<br/>
+    &bull; Other format of conversions and other functionality may be added later...<br/>
 </p>
