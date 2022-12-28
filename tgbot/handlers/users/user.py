@@ -13,33 +13,8 @@ from tgbot.data.database.handler import SQLiteHandler
 async def user_start(message: Message):
     user_id = message.from_user.id
     first_name = message.from_user.first_name
-    answer_text = f"""
-<b>Привет, {first_name}!</b>
-Это бот, который позволит вам конвертировать
-ваши аудиосообщения и дугие аудиофайлы в удобный для вас формат.
-        
-<b>Как использовать аудиобота:</b>
-1) Запишите ваше аудиосообщение или загрузите аудиофайл
-2) Выберите формат из списка команд ниже или передайте
-   в виде /"формат"
-
-<b>Справка:</b>
-Если вы выбрали формат, которого нет в списке команд,
-бот все равно попытается выполнить конверсию,
-если она завершится неудачей, попробуйте выбрать
-другой формат согласно пункту 2)
-    
-<b>Доступные команды:</b>
-/start - для начала работы.
-/help - для получения справки.
-
-<b>Команды для быстрого выбора формата:</b>
-/mp3
-/aac
-/flac
-/alac
-/mp2
-"""
+    # TODO: add answer
+    answer_text = 'start'
     await message.reply(answer_text, parse_mode=ParseMode.HTML)
     # Creation of a database connection to add usr name and tg-id
     sql_handler = SQLiteHandler(message)

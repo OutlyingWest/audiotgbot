@@ -24,8 +24,9 @@ class TgBot:
 
 @dataclass
 class FilePaths:
-    input_path: str
-    output_path: str
+    audio_input_path: str
+    audio_output_path: str
+    answers_path: str
 
 
 @dataclass
@@ -38,7 +39,7 @@ class Config:
     tg_bot: TgBot
     db: DbConfig
     sqlite_db: SQLiteDbConfig
-    sound_file_path: FilePaths
+    file_path: FilePaths
     misc: Miscellaneous
 
 
@@ -56,15 +57,16 @@ def load_config(path: str = None):
             host=env.str('DB_HOST'),
             password=env.str('DB_PASS'),
             user=env.str('DB_USER'),
-            database=env.str('DB_NAME')
+            database=env.str('DB_NAME'),
         ),
         sqlite_db=SQLiteDbConfig(
             database=env.str('SQLITE_DB_NAME'),
-            tables=env.list('SQLITE_DB_TABLES')
+            tables=env.list('SQLITE_DB_TABLES'),
         ),
-        sound_file_path=FilePaths(
-            input_path=env.str('INPUT_AUDIO_FILES_PATH'),
-            output_path=env.str('OUTPUT_AUDIO_FILES_PATH')
+        file_path=FilePaths(
+            audio_input_path=env.str('INPUT_AUDIO_FILES_PATH'),
+            audio_output_path=env.str('OUTPUT_AUDIO_FILES_PATH'),
+            answers_path=env.str('ANSWERS_PATH'),
         ),
         misc=Miscellaneous(),
     )

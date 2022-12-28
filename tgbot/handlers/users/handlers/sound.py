@@ -29,7 +29,7 @@ async def handle_input_file(message: Message, file: File, file_name: str) -> boo
     """ Create a directory for an audio file if it has not been created yet
         and download the audio file in this directory
         """
-    path = message.bot.get('config').sound_file_path.input_path
+    path = message.bot.get('config').file_path.audio_input_path
     Path(path).mkdir(parents=True, exist_ok=True)
     file = await message.bot.download_file(file_path=file.file_path, destination=f"{path}{file_name}")
 
@@ -81,8 +81,8 @@ def handle_conversion(message: Message, user_id, file_id: str, chosen_format="mp
         for tg_file_id in tg_file_ids:
             if user_tg_id == user_id and tg_file_id == file_id:
                 # Get paths from config
-                download_path: str = message.bot.get('config').sound_file_path.input_path
-                upload_path = message.bot.get('config').sound_file_path.output_path
+                download_path: str = message.bot.get('config').file_path.audio_input_path
+                upload_path = message.bot.get('config').file_path.audio_output_path
                 # Find sound name in audio directory
                 sound_names = [file_name for file_name in os.listdir(download_path)]
                 sound_name = [sound_name
