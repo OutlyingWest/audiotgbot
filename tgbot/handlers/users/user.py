@@ -5,7 +5,7 @@ from aiogram.types.message import ParseMode
 from aiogram.dispatcher import FSMContext
 
 from tgbot.states.states import SoundStates
-from tgbot.misc import commands
+from tgbot.misc import commands, answers
 from tgbot.handlers.users.handlers import sound
 from tgbot.data.database.handler import SQLiteHandler
 
@@ -14,7 +14,7 @@ async def user_start(message: Message):
     user_id = message.from_user.id
     first_name = message.from_user.first_name
     # TODO: add answer
-    answer_text = 'start'
+    answer_text = answers.get_answer(message, 'entry')
     await message.reply(answer_text, parse_mode=ParseMode.HTML)
     # Creation of a database connection to add usr name and tg-id
     sql_handler = SQLiteHandler(message)

@@ -11,16 +11,19 @@ class DbConfig:
     user: str
     database: str
 
+
 @dataclass
 class SQLiteDbConfig:
     database: str
     tables: list[str]
+
 
 @dataclass
 class TgBot:
     token: str
     admin_ids: list[int]
     use_redis: bool
+
 
 @dataclass
 class FilePaths:
