@@ -1,4 +1,5 @@
 import os
+from aiogram.utils.markdown import hcode
 
 
 def get_answer(obj, answer='entry') -> str:
@@ -12,5 +13,7 @@ def get_answer(obj, answer='entry') -> str:
     answer_with_path = os.path.join(obj.bot.get('config').file_path.answers_path, answer + '.txt')
     with open(answer_with_path, mode='r', encoding='utf-8') as answr:
         answer_string = answr.read()
-    answer_string_with_username = answer_string.format(first_name=obj.from_user.first_name)
-    return answer_string_with_username
+    answer_string_with_format = answer_string.format(
+        first_name=obj.from_user.first_name,
+        format=hcode('/format'))
+    return answer_string_with_format

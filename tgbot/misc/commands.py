@@ -1,12 +1,9 @@
-from dataclasses import dataclass
-
-from environs import Env
 formats = [
     'mp3',
     'ogg',
-    'aac',
+    'wav',
     'flac',
-    'alac',
+    'raw',
     'mp2',
     'other',
 ]

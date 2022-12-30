@@ -3,9 +3,7 @@ import logging
 import os
 import re
 from collections import defaultdict
-from aiogram.dispatcher import FSMContext
 from aiogram.types import Message
-from tgbot.misc import commands
 from pathlib import Path
 from aiogram.types import File
 from aiogram.types.input_file import InputFile
@@ -14,6 +12,37 @@ from pydub import AudioSegment
 from tgbot.data.database.handler import SQLiteHandler
 
 logic_logger = logging.getLogger(__name__)
+
+
+async def converse(message: Message, sound_file: File, sound_id: str, chosen_format: str):
+    """ Execute the conversion to the chose sound format
+    Return value:
+        output_file - converted file
+    """
+
+    user_id = message.from_user.id
+    # Assemble the file name in download directory
+    try:   # Check if file name exist - for audio files only
+        file_name = message.audio.file_name
+        sound_name = f'{sound_id}_{file_name}'
+    except AttributeError:
+        sound_name = f'voice_{sound_id}.ogg'
+
+    download_tasks = [asyncio.create_task(add_file_for_current_user(message, user_id, sound_id)),
+                      asyncio.create_task(handle_input_file(message, sound_file, sound_name)), ]
+    download_tasks_done, _ = await asyncio.wait(download_tasks, return_when=asyncio.ALL_COMPLETED)
+    is_conv_done = False
+    output_file = None
+    if download_tasks_done:
+        is_conv_done = handle_conversion(message, user_id, sound_id, chosen_format, bitrate="128k")
+        output_file = handle_output_file(message)
+    else:
+        await message.reply('Something went wrong on file downloading!')
+
+    if not is_conv_done:
+        output_file = None
+
+    return output_file
 
 
 def glob_re(path, regex="", glob_mask="**/*", inverse=False):
@@ -72,57 +101,21 @@ def handle_output_file(message: Message):
         # Get user key
         user_key = list(user_data_dict.keys())[0]
         file_ids = user_data_dict[user_key]
-        print('file_ids:', file_ids)
         file_id = file_ids[-1]
-        print('file_id:', file_id)
         # Get file
         audio_output_path = message.bot.get('config').file_path.audio_output_path
         file_name_list = glob_re(audio_output_path, regex=f".*{file_id}.*", glob_mask="*")
         file_name_with_path = file_name_list[0]
-        print('file_name_with_path:', file_name_with_path)
         # Send file to telegram user
         if file_name_with_path:
             file_format = file_name_with_path.split('.')[1]
-            print('file_format:', file_format)
             converted_audio = InputFile(file_name_with_path, filename=f'converted_audio.{file_format}')
             # converted_audio_file = converted_audio.get_file()
-            print('type of file obj', type(converted_audio))
         else:
-            converted_audio_file = None
+            converted_audio = None
             logic_logger.info(f"File with name {file_name_with_path} is not found")
 
         return converted_audio
-
-
-async def converse(message: Message, sound_file: File, sound_id: str, chosen_format: str):
-    """ Execute the conversion to the chose sound format
-    Return value:
-        output_file - converted file
-    """
-
-    user_id = message.from_user.id
-    # Assemble the file name in download directory
-    try:   # Check if file name exist - for audio files only
-        file_name = message.audio.file_name
-        sound_name = f'{sound_id}_{file_name}'
-    except AttributeError:
-        sound_name = f'voice_{sound_id}.ogg'
-
-    download_tasks = [asyncio.create_task(add_file_for_current_user(message, user_id, sound_id)),
-                      asyncio.create_task(handle_input_file(message, sound_file, sound_name)), ]
-    download_tasks_done, _ = await asyncio.wait(download_tasks, return_when=asyncio.ALL_COMPLETED)
-    is_conv_done = False
-    output_file = None
-    if download_tasks_done:
-        is_conv_done = handle_conversion(message, user_id, sound_id, chosen_format, bitrate="128k")
-        output_file = handle_output_file(message)
-    else:
-        await message.reply('Something went wrong on file downloading!')
-
-    if not is_conv_done:
-        output_file = None
-
-    return output_file
 
 
 def handle_conversion(message: Message, user_id, file_id: str, chosen_format="mp3", bitrate="128k"):
@@ -163,6 +156,7 @@ def handle_conversion(message: Message, user_id, file_id: str, chosen_format="mp
                     # Strip a file format
                     sound_name_str_no_format = sound_name_str.split('.')[0]
                     # Conversion and export to upload directory
+                    # TODO: alac, aac formats is not work raise CouldntEncodeError pydub.exceptions.CouldntEncodeError
                     sound.export(f'{upload_path}{sound_name_str_no_format}.{chosen_format}',
                                  format=chosen_format,
                                  bitrate=bitrate)

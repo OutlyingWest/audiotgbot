@@ -66,11 +66,21 @@ async def choose_format(message: Message, state: FSMContext):
     # Send file to telegram user
     chat_id = message.chat.id
     await message.bot.send_document(chat_id, (output_audio_filename, output_audio_file))
+    # Send message to return to get audio
+    get_sound_text = answers.get_answer(message, 'get_sound_step')
+    await message.answer(get_sound_text)
+    # Set next state
     await SoundStates.get_sound.set()
+
+
+async def bot_help(message: Message):
+    help_text = answers.get_answer(message, 'help')
+    await message.answer(help_text)
 
 
 def register_user(dp: Dispatcher):
     dp.register_message_handler(user_start, commands=["start"], state=None)
+    dp.register_message_handler(bot_help, commands=["help"], state="*", content_types=ContentTypes.TEXT)
     dp.register_message_handler(get_audio, state=SoundStates.get_sound, content_types=ContentTypes.AUDIO)
     dp.register_message_handler(get_voice, state=SoundStates.get_sound, content_types=ContentTypes.VOICE)
     dp.register_message_handler(choose_format, commands=commands.formats, state=SoundStates.get_format)
