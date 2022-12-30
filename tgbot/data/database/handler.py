@@ -4,6 +4,8 @@ import logging
 
 
 handler_logger = logging.getLogger(__name__)
+
+
 class SQLiteHandler:
     def __init__(self, obj=None, database_name=None, tables=None, timeout=5):
         """Class provide connection and methods to interact
@@ -48,7 +50,6 @@ class SQLiteHandler:
                 return database_name, tables
             except AttributeError:
                 handler_logger.info("get_config method can't to get bot instance")
-
 
     def create_tables(self, tables=None):
         if not tables:
@@ -112,11 +113,14 @@ class SQLiteHandler:
         defaultdict(<class 'list'>, {(1, 'Alex'): ['asdfasaHLUHJHLHLJhljh'], ...}
         where {(tg_user_id, 'first_name'): ['tg_file_id_1', 'tg_file_id_2', ...]) ...}
         """
-        select_query = self.cur.execute("""SELECT users.tg_id AS tg_id,
+        select_query = self.cur.execute(
+        """
+        SELECT users.tg_id AS tg_id,
         users.first_name,
         audio.tg_id
         FROM users JOIN audio
-        ON users.tg_id = audio.tg_user_id;""")
+        ON users.tg_id = audio.tg_user_id;
+        """)
         users_data = select_query.fetchall()
 
         users_dict = defaultdict(list)
@@ -125,6 +129,30 @@ class SQLiteHandler:
 
         return users_dict
 
+    def get_user_data(self, user_id):
+        """This method provide the ability to get one line of data
+        from users table. Returns defaultdict
+        """
+        select_query = self.cur.execute(
+        """
+        SELECT users.tg_id,
+        users.first_name,
+        audio.tg_id
+        FROM users
+        JOIN audio
+        ON users.tg_id = audio.tg_user_id
+        WHERE users.tg_id = ?;
+        """, (user_id,))
+        user_data_list = select_query.fetchall()
+        print(user_data_list)
+
+        user_dict = defaultdict(list)
+        for *user_alias, file_id in user_data_list:
+            user_dict[tuple(user_alias)].append(file_id)
+
+        print(user_dict)
+
+        return user_dict
 
     def get_from_exciting_table(self, table_name, **kwargs):
         """This method provide the ability to get one line of data
@@ -143,3 +171,9 @@ class SQLiteHandler:
         self.conn.close()
 
 
+def test():
+    pass
+
+
+if __name__ == "__main__":
+    test()

@@ -13,23 +13,17 @@ from tgbot.data.database.handler import SQLiteHandler
 async def user_start(message: Message):
     user_id = message.from_user.id
     first_name = message.from_user.first_name
-    # TODO: add answer
-    answer_text = answers.get_answer(message, 'entry')
-    await message.reply(answer_text, parse_mode=ParseMode.HTML)
+
+    entry_answer_text = answers.get_answer(message, 'entry')
+    await message.reply(entry_answer_text, parse_mode=ParseMode.HTML)
+
+    get_sound_text = answers.get_answer(message, 'get_sound_step')
+    await message.answer(get_sound_text)
+
     # Creation of a database connection to add usr name and tg-id
     sql_handler = SQLiteHandler(message)
     # Insert user data to table "users"
     sql_handler.insert_to_exiting_table('users', telegram_id=user_id, first_user_name=first_name)
-    await SoundStates.get_format.set()
-
-
-async def choose_format(message: Message, state: FSMContext):
-    sound_format = message.text.lstrip('/')
-    await message.reply(f"You chose the format: {sound_format}")
-    async with state.get_state() as sound_data:
-        audio_file = sound_data['file']
-        audio_id = sound_data['id']
-    await sound.converse(message, audio_file, audio_id, sound_format)
     await SoundStates.get_sound.set()
 
 
@@ -41,6 +35,8 @@ async def get_audio(message: Message, state: FSMContext):
         sound_data['file'] = audio_file
         sound_data['id'] = audio_id
     await message.reply("Ваш аудиофайл успешно загружен!")
+    get_format_text = answers.get_answer(message, 'get_format_step')
+    await message.answer(get_format_text)
     await SoundStates.get_format.set()
 
 
@@ -49,13 +45,33 @@ async def get_voice(message: Message, state: FSMContext):
 
     voice_file = await message.voice.get_file()
     voice_id = message.voice.file_id
-    sound_format = await sound.converse(message, voice_file, voice_id, state)
-    await message.reply(f"It's a voice!\nIt will conversed to format: {sound_format}")
+    async with state.proxy() as sound_data:
+        sound_data['file'] = voice_file
+        sound_data['id'] = voice_id
+    await message.reply("Ваше аудиоcообщение успешно загружено!")
+    get_format_text = answers.get_answer(message, 'get_format_step')
+    await message.answer(get_format_text)
     await SoundStates.get_format.set()
+
+
+async def choose_format(message: Message, state: FSMContext):
+    sound_format = message.text.lstrip('/')
+    async with state.proxy() as sound_data:
+        audio_file = sound_data['file']
+        audio_id = sound_data['id']
+    output_audio = await sound.converse(message, audio_file, audio_id, sound_format)
+    # Get file from InputFile object
+    output_audio_file = output_audio.get_file()
+    output_audio_filename = output_audio.get_filename()
+    # Send file to telegram user
+    chat_id = message.chat.id
+    await message.bot.send_document(chat_id, (output_audio_filename, output_audio_file))
+    await SoundStates.get_sound.set()
 
 
 def register_user(dp: Dispatcher):
     dp.register_message_handler(user_start, commands=["start"], state=None)
-    dp.register_message_handler(choose_format, commands=commands.formats, state=SoundStates.get_format)
     dp.register_message_handler(get_audio, state=SoundStates.get_sound, content_types=ContentTypes.AUDIO)
     dp.register_message_handler(get_voice, state=SoundStates.get_sound, content_types=ContentTypes.VOICE)
+    dp.register_message_handler(choose_format, commands=commands.formats, state=SoundStates.get_format)
+
