@@ -2,6 +2,7 @@ from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from tgbot.states.states import SoundStates
 from aiogram.utils.markdown import hcode
+from aiogram.types.message import ParseMode
 
 from tgbot.misc import answers
 
@@ -20,16 +21,17 @@ async def bot_echo_get_sound(message: types.Message):
     text = [
         'Ожидается аудиофайл.',
         'Содержание вашего сообщения:',
-        message.text
+        message.text,
     ]
-    await message.answer('\n'.join(text))
+    await message.answer('\n'.join(text), parse_mode=ParseMode.MARKDOWN)
 
 
 async def bot_echo_get_format(message: types.Message):
     text = [
         f"Ожидается формат в виде {hcode('/format')}",
         'Содержание вашего сообщения:',
-        message.text
+        message.text,
+        '\nВозможно выбранный вами формат пока не поддреживается.',
     ]
     await message.answer('\n'.join(text))
 

@@ -7,7 +7,7 @@ from aiogram.types import Message
 from pathlib import Path
 from aiogram.types import File
 from aiogram.types.input_file import InputFile
-from pydub import AudioSegment
+from pydub import AudioSegment, exceptions
 
 from tgbot.data.database.handler import SQLiteHandler
 
@@ -162,7 +162,10 @@ def handle_conversion(message: Message, user_id, file_id: str, chosen_format="mp
                                  bitrate=bitrate)
                     user_found = True
                 except ValueError:
-                    logic_logger.info("Conversion failed")
+                    logic_logger.info('Conversion failed "ValueError"')
+                except exceptions.CouldntEncodeError:
+                    logic_logger.info('Conversion failed "CouldntEncodeError"')
+
                 break
         if user_found:
             break

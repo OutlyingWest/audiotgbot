@@ -144,13 +144,10 @@ class SQLiteHandler:
         WHERE users.tg_id = ?;
         """, (user_id,))
         user_data_list = select_query.fetchall()
-        print(user_data_list)
 
         user_dict = defaultdict(list)
         for *user_alias, file_id in user_data_list:
             user_dict[tuple(user_alias)].append(file_id)
-
-        print(user_dict)
 
         return user_dict
 

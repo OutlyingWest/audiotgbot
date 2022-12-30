@@ -15,5 +15,7 @@ def get_answer(obj, answer='entry') -> str:
         answer_string = answr.read()
     answer_string_with_format = answer_string.format(
         first_name=obj.from_user.first_name,
-        format=hcode('/format'))
+        format_cmd=hcode('/format'),
+        error=hcode('Error:')
+    )
     return answer_string_with_format

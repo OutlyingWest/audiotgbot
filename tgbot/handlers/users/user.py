@@ -1,8 +1,8 @@
-import aiogram.types.message
 from aiogram import Dispatcher
 from aiogram.types import Message, ContentTypes
 from aiogram.types.message import ParseMode
 from aiogram.dispatcher import FSMContext
+from aiogram.utils.exceptions import BadRequest
 
 from tgbot.states.states import SoundStates
 from tgbot.misc import commands, answers
@@ -65,7 +65,11 @@ async def choose_format(message: Message, state: FSMContext):
     output_audio_filename = output_audio.get_filename()
     # Send file to telegram user
     chat_id = message.chat.id
-    await message.bot.send_document(chat_id, (output_audio_filename, output_audio_file))
+    try:
+        await message.bot.send_document(chat_id, (output_audio_filename, output_audio_file))
+    except BadRequest:
+        empty_error_text = answers.get_answer(message, 'empty_upload_error')
+        await message.answer(empty_error_text)
     # Send message to return to get audio
     get_sound_text = answers.get_answer(message, 'get_sound_step')
     await message.answer(get_sound_text)

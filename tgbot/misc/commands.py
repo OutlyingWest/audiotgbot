@@ -5,6 +5,8 @@ formats = [
     'flac',
     'raw',
     'mp2',
+    'alac',
+    'aac',
     'other',
 ]
 
