@@ -36,10 +36,8 @@ async def handle_input_file(message: Message, file: File, file_name: str) -> boo
     return file is not None
 
 
-async def converse(message: Message, sound_file: File, sound_id, sound_info: FSMContext):
+async def converse(message: Message, sound_file: File, sound_id: str, chosen_format: str):
     """ Execute the conversion to the chose sound format"""
-    async with sound_info.proxy() as si:
-        chosen_format = si['format']
 
     user_id = message.from_user.id
     # Assemble the file name in download directory

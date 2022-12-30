@@ -26,20 +26,21 @@ async def user_start(message: Message):
 async def choose_format(message: Message, state: FSMContext):
     sound_format = message.text.lstrip('/')
     await message.reply(f"You chose the format: {sound_format}")
-    async with state.proxy() as sound_data:
-        sound_data['format'] = sound_format
-
+    async with state.get_state() as sound_data:
+        audio_file = sound_data['file']
+        audio_id = sound_data['id']
+    await sound.converse(message, audio_file, audio_id, sound_format)
     await SoundStates.get_sound.set()
 
 
 async def get_audio(message: Message, state: FSMContext):
     """ If user upload a sound file"""
-
     audio_file = await message.audio.get_file()
     audio_id = message.audio.file_id
-    # TODO try to no get the format
-    chosen_format = await sound.converse(message, audio_file, audio_id, state)
-    await message.reply(f"It's an audio!\nIt will conversed to format: {chosen_format}")
+    async with state.proxy() as sound_data:
+        sound_data['file'] = audio_file
+        sound_data['id'] = audio_id
+    await message.reply("Ваш аудиофайл успешно загружен!")
     await SoundStates.get_format.set()
 
 
