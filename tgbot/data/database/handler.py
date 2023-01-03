@@ -151,18 +151,49 @@ class SQLiteHandler:
 
         return user_dict
 
-    def get_from_exciting_table(self, table_name, **kwargs):
-        """This method provide the ability to get one line of data
-        from users table if it contains in the list self.tables
+    def delete_from_audio_table(self, user_id, audio_id):
+        """This method provide the ability to delete the line form
+        audio table
         """
-        pass
+        self.cur.execute("""
+        DELETE FROM audio
+        WHERE tg_user_id = ?
+        AND tg_id = ?;""", (user_id, audio_id))
+        self.conn.commit()
 
-    def delete_from_exciting_table(self, table_name):
-        """This method provide the ability to delete one string
-        from exciting table
+    def delete_from_users_table(self, id):
+        """This method provide the ability to delete the line form
+        users table
         """
+        self.cur.execute("""DELETE FROM users WHERE tg_id = ?;""", (id,))
+        self.conn.commit()
 
-        pass
+    def delete_user_data(self, user_id, audio_id):
+        """Delete user data from all related tables:
+        users, audio
+        """
+        self.delete_from_audio_table(user_id, audio_id)
+        self.delete_from_users_table(user_id)
+
+    def delete_elder_from_audio_table(self, amount_elder: int, amount_in_table: int):
+        """Principle of work:
+        delete amount_elder from audio table if amount of lines in table > amount_in_table
+        Arguments:
+            amount_elder - amount of elder lines to delete
+            amount_in_table - amount after exceed that the deletion allowed
+        """
+        if amount_in_table <= amount_elder:
+            raise ValueError('amount_in_table must be over than amount_elder')
+
+        select_amount_exists_in_table = self.cur.execute("""SELECT count(1) FROM audio""")
+        amount_exists_in_table = select_amount_exists_in_table.fetchone()
+        if amount_exists_in_table > amount_in_table:
+            while amount_elder > 0:
+                amount_elder -= 1
+                self.cur.execute("""
+                    DELETE FROM audio 
+                    WHERE rowid = (SELECT min(rowid) FROM audio);""")
+                self.conn.commit()
 
     def close_connection(self):
         self.conn.close()

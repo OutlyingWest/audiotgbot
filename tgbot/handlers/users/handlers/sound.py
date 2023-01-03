@@ -72,6 +72,7 @@ async def add_file_for_current_user(message: Message, user_id, file_id):
         """
     sql_handler = SQLiteHandler(message)
     sql_handler.insert_to_exiting_table('audio', telegram_file_id=file_id, tg_user_id=user_id)
+
     sql_handler.close_connection()
 
 
