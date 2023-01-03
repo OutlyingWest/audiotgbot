@@ -29,12 +29,16 @@ async def user_start(message: Message):
 
 async def get_audio(message: Message, state: FSMContext):
     """ If user upload a sound file"""
+
     audio_file = await message.audio.get_file()
     audio_id = message.audio.file_id
     async with state.proxy() as sound_data:
         sound_data['file'] = audio_file
         sound_data['id'] = audio_id
-    await message.reply("Ваш аудиофайл успешно загружен!")
+
+    load_complete_text = answers.get_answer(message, 'message_load_complete')
+    await message.reply(load_complete_text)
+
     get_format_text = answers.get_answer(message, 'get_format_step')
     await message.answer(get_format_text)
     await SoundStates.get_format.set()
@@ -48,14 +52,23 @@ async def get_voice(message: Message, state: FSMContext):
     async with state.proxy() as sound_data:
         sound_data['file'] = voice_file
         sound_data['id'] = voice_id
-    await message.reply("Ваше аудиоcообщение успешно загружено!")
+
+    load_complete_text = answers.get_answer(message, 'message_load_complete')
+    await message.reply(load_complete_text)
+
     get_format_text = answers.get_answer(message, 'get_format_step')
     await message.answer(get_format_text)
+
     await SoundStates.get_format.set()
 
 
 async def choose_format(message: Message, state: FSMContext):
+
     sound_format = message.text.lstrip('/')
+
+    conversion_in_progress_text = answers.get_answer(message, 'conversion_in_progress')
+    await message.answer(conversion_in_progress_text)
+
     async with state.proxy() as sound_data:
         audio_file = sound_data['file']
         audio_id = sound_data['id']
