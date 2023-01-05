@@ -9,7 +9,9 @@ from aiogram.types import File
 from aiogram.types.input_file import InputFile
 from pydub import AudioSegment, exceptions
 
-from tgbot.data.database.handler import SQLiteHandler
+from tgbot.data.manage.database.handler import SQLiteHandler
+
+from tgbot.data.manage.files.handler import glob_re
 
 logic_logger = logging.getLogger(__name__)
 
@@ -43,26 +45,6 @@ async def converse(message: Message, sound_file: File, sound_id: str, chosen_for
         output_file = None
 
     return output_file
-
-
-def glob_re(path, regex="", glob_mask="**/*", inverse=False):
-    """Find for files by regex
-    Parameters:
-        path - path to directory to start finding
-        regex - regular expression for find
-        glob_mask="**/*" - find recursive by default,
-                       find i current directory use "*"
-        inverse - bool if True - find items include regex,
-                      if False - find items exclude regex
-        Returns:
-            res - file name
-    """
-    p = Path(path)
-    if inverse:
-        res = [str(f) for f in p.glob(glob_mask) if not re.search(regex, str(f))]
-    else:
-        res = [str(f) for f in p.glob(glob_mask) if re.search(regex, str(f))]
-    return res
 
 
 async def add_file_for_current_user(message: Message, user_id, file_id):

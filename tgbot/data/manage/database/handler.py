@@ -175,24 +175,30 @@ class SQLiteHandler:
         self.delete_from_audio_table(user_id, audio_id)
         self.delete_from_users_table(user_id)
 
-    def delete_elder_from_audio_table(self, amount_elder: int, amount_in_table: int):
+    def delete_elder_from_audio_table(self, num_of_elder: int, num_in_table: int, user_id: int):
         """Principle of work:
-        delete amount_elder from audio table if amount of lines in table > amount_in_table
+        delete num_of_elder from audio table if number of lines in table > num_in_table
         Arguments:
-            amount_elder - amount of elder lines to delete
-            amount_in_table - amount after exceed that the deletion allowed
+            num_of_elder - amount of elder lines to delete
+            num_in_table - amount after exceed that the deletion allowed
         """
-        if amount_in_table <= amount_elder:
+        if num_in_table <= num_of_elder:
             raise ValueError('amount_in_table must be over than amount_elder')
 
-        select_amount_exists_in_table = self.cur.execute("""SELECT count(1) FROM audio""")
-        amount_exists_in_table = select_amount_exists_in_table.fetchone()
-        if amount_exists_in_table > amount_in_table:
-            while amount_elder > 0:
-                amount_elder -= 1
+        select_amount_exists_in_table = self.cur.execute("""
+        SELECT count(1)
+        FROM audio
+        WHERE tg_user_id = ?;""", (user_id,))
+        num_exists_in_table = select_amount_exists_in_table.fetchone()[0]
+        if num_exists_in_table > num_in_table:
+            while num_of_elder > 0:
+                num_of_elder -= 1
                 self.cur.execute("""
                     DELETE FROM audio 
-                    WHERE rowid = (SELECT min(rowid) FROM audio);""")
+                    WHERE rowid = 
+                    (SELECT min(rowid) 
+                    FROM audio 
+                    WHERE tg_user_id = ?);""", (user_id,))
                 self.conn.commit()
 
     def close_connection(self):
