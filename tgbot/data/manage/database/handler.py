@@ -151,6 +151,25 @@ class SQLiteHandler:
 
         return user_dict
 
+    def get_elder_audio_id(self, user_id: int):
+        """Allow to get minimal rowid in audio table for user with id=user_id"""
+        select_id_of_elder_audio = self.cur.execute("""
+        SELECT min(rowid) 
+        FROM audio 
+        WHERE tg_user_id = ?
+        """, (user_id,))
+        return select_id_of_elder_audio.fetchone()[0]
+
+    def get_num_lines_in_audio(self, user_id):
+        """Allow to get number of lines in audio table for user with id=user_id"""
+        select_num_exists_in_table = self.cur.execute("""
+        SELECT count(1)
+        FROM audio
+        WHERE tg_user_id = ?;
+        """, (user_id,))
+        return select_num_exists_in_table.fetchone()[0]
+
+
     def delete_from_audio_table(self, user_id, audio_id):
         """This method provide the ability to delete the line form
         audio table
@@ -183,14 +202,11 @@ class SQLiteHandler:
             num_in_table - amount after exceed that the deletion allowed
         """
         if num_in_table <= num_of_elder:
-            raise ValueError('amount_in_table must be over than amount_elder')
+            raise ValueError('num_in_table must be over than num_of_elder')
 
-        select_amount_exists_in_table = self.cur.execute("""
-        SELECT count(1)
-        FROM audio
-        WHERE tg_user_id = ?;""", (user_id,))
-        num_exists_in_table = select_amount_exists_in_table.fetchone()[0]
-        if num_exists_in_table > num_in_table:
+        num_lines_in_audio = self.get_num_lines_in_audio(user_id)
+
+        if num_lines_in_audio > num_in_table:
             while num_of_elder > 0:
                 num_of_elder -= 1
                 self.cur.execute("""
@@ -198,7 +214,8 @@ class SQLiteHandler:
                     WHERE rowid = 
                     (SELECT min(rowid) 
                     FROM audio 
-                    WHERE tg_user_id = ?);""", (user_id,))
+                    WHERE tg_user_id = ?);
+                    """, (user_id,))
                 self.conn.commit()
 
     def close_connection(self):

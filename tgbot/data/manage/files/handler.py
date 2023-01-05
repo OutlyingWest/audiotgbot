@@ -1,5 +1,10 @@
 import re
+import os
 from pathlib import Path
+
+from aiogram.types import Message
+
+from tgbot.data.manage.database.handler import SQLiteHandler
 
 
 def glob_re(path, regex="", glob_mask="**/*", inverse=False):
@@ -22,7 +27,16 @@ def glob_re(path, regex="", glob_mask="**/*", inverse=False):
     return res
 
 
-def delete_elder_user_files(num_of_elder: int, num_in_dir_for_user: int, user_id):
+def delete_file_by_id(file_path: str, tg_file_id: str):
+    file_name_list = glob_re(file_path, regex=f".*{tg_file_id}.*", glob_mask="*")
+    file_name_with_path = file_name_list[0]
+    if os.path.isfile(file_name_with_path):
+        os.remove(file_name_with_path)
+    else:
+        print(f'File in {file_path} is not exist')
+
+
+def delete_elder_user_files(num_of_elder: int, num_in_dir_for_user: int, user_id: int, message: Message):
     """Principle of work:
         Delete num_of_elder from audio dir if number of files in dir > num_in_dir_for_user
         with user id = user_id
@@ -30,4 +44,22 @@ def delete_elder_user_files(num_of_elder: int, num_in_dir_for_user: int, user_id
             num_of_elder - number of elder files to delete
             num_in_dir_for_user - number after exceed that for user with user_id the deletion is allowed
         """
-    pass
+    if num_in_dir_for_user <= num_of_elder:
+        raise ValueError('num_in_dir_for_user must be over than num_of_elder')
+
+    sql_handler = SQLiteHandler(message)
+    num_lines_in_audio = sql_handler.get_num_lines_in_audio(user_id)
+    # Get input file name
+    audio_input_path = message.bot.get('config').file_path.audio_input_path
+    # Get output file name
+    audio_output_path = message.bot.get('config').file_path.audio_output_path
+
+    if num_lines_in_audio > num_in_dir_for_user:
+        while num_of_elder > 0:
+            num_of_elder -= 1
+            # Get elder audio id from db for user
+            elder_audio_id = sql_handler.get_elder_audio_id(user_id)
+            delete_file_by_id(audio_input_path, elder_audio_id)
+            # TODO: add id to output file names and add deletion of them
+
+

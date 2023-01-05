@@ -93,7 +93,6 @@ def handle_output_file(message: Message):
         if file_name_with_path:
             file_format = file_name_with_path.split('.')[1]
             converted_audio = InputFile(file_name_with_path, filename=f'converted_audio.{file_format}')
-            # converted_audio_file = converted_audio.get_file()
         else:
             converted_audio = None
             logic_logger.info(f"File with name {file_name_with_path} is not found")
