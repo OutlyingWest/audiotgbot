@@ -11,7 +11,7 @@ from pydub import AudioSegment, exceptions
 
 from tgbot.data.manage.database.handler import SQLiteHandler
 
-from tgbot.data.manage.files.handler import glob_re
+from tgbot.data.manage.files.handler import glob_re, delete_elder_user_data
 
 logic_logger = logging.getLogger(__name__)
 
@@ -54,6 +54,14 @@ async def add_file_for_current_user(message: Message, user_id, file_id):
         """
     sql_handler = SQLiteHandler(message)
     sql_handler.insert_to_exiting_table('audio', telegram_file_id=file_id, tg_user_id=user_id)
+    # Parameters to delete
+    num_of_files_to_delete = 3
+    max_files_num_for_user = 10
+
+    delete_elder_user_data(num_of_elder=num_of_files_to_delete,
+                            num_in_dir_for_user=max_files_num_for_user,
+                            user_id=user_id,
+                            message=message)
 
     sql_handler.close_connection()
 

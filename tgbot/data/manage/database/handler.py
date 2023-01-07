@@ -151,7 +151,7 @@ class SQLiteHandler:
 
         return user_dict
 
-    def get_elder_audio_id(self, user_id: int):
+    def get_elder_audio_rowid(self, user_id: int):
         """Allow to get minimal rowid in audio table for user with id=user_id"""
         select_id_of_elder_audio = self.cur.execute("""
         SELECT min(rowid) 
@@ -159,6 +159,15 @@ class SQLiteHandler:
         WHERE tg_user_id = ?
         """, (user_id,))
         return select_id_of_elder_audio.fetchone()[0]
+
+    def get_elder_audio_tgid(self, user_id: int):
+        """Allow to get minimal rowid in audio table for user with id=user_id"""
+        select_id_of_elder_audio = self.cur.execute("""
+        SELECT min(rowid), tg_id 
+        FROM audio 
+        WHERE tg_user_id = ?
+        """, (user_id,))
+        return select_id_of_elder_audio.fetchone()[1]
 
     def get_num_lines_in_audio(self, user_id):
         """Allow to get number of lines in audio table for user with id=user_id"""
