@@ -45,7 +45,7 @@ async def main():
     bot = Bot(token=config.tg_bot.token, parse_mode='HTML')
     dp = Dispatcher(bot, storage=storage)
 
-    # After that accesseble - bot.get('config') in handlers for example
+    # After that accessible - bot.get('config') in handlers for example
     bot['config'] = config
 
     # Creation of tables for users
@@ -57,9 +57,7 @@ async def main():
     register_all_filters(dp)
     register_all_handlers(dp)
 
-
-
-    # start
+    # Start
     try:
         await dp.start_polling()
     finally:

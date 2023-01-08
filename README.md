@@ -18,3 +18,16 @@
     &bull; Conversions from .ogg to .mp3.<br/>
     &bull; Other format of conversions and other functionality may be added later...<br/>
 </p>
+<h2>
+    Installation
+</h2>
+<p>
+    <b>1) Open project folder<br/></b>
+    <b>2) Activate venv by:<br/></b>
+    source /path/to/project/audiotgbot/venv/bin/activate<br/>
+    <b>3) Install python requirements by:<br/></b>
+    pip install -r requirements.txt<br/>
+    <b>4) Install ffmpeg<br/></b>
+    apt-get install ffmpeg libavcodec-extra
+</p>
+
