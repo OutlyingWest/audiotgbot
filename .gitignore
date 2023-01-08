@@ -61,6 +61,7 @@ venv.bak/
 .pyre/
 .idea/*
 .env
+!.env.dist
 
 # Files in data ignore
 #     in download:

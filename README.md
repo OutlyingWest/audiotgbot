@@ -23,6 +23,8 @@
 </h2>
 <p>
     <b>1) Open project folder<br/></b>
+    <b>1) Create venv<br/></b>
+    python -m venv venv
     <b>2) Activate venv by:<br/></b>
     source /path/to/project/audiotgbot/venv/bin/activate<br/>
     <b>3) Install python requirements by:<br/></b>
