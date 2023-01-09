@@ -34,7 +34,7 @@ async def get_audio(message: Message, state: FSMContext):
     audio_id = message.audio.file_id
     async with state.proxy() as sound_data:
         sound_data['file'] = audio_file
-        sound_data['id'] = audio_id
+        sound_data['id'] = str(audio_id)
 
     load_complete_text = answers.get_answer(message, 'message_load_complete')
     await message.reply(load_complete_text)
