@@ -67,15 +67,15 @@ venv.bak/
 #     in download:
 tgbot/data/audio/download/*
 # But not ignore
-tgbot/data/audio/download/!info.txt
+!tgbot/data/audio/download/.info
 #     in upload:
 tgbot/data/audio/upload/*
 # But not ignore
-tgbot/data/audio/upload/!info.txt
+!tgbot/data/audio/upload/.info
 #     in pictures:
 tgbot/data/pictures/*
 # But not ignore
-tgbot/data/pictures/!info.txt
+!tgbot/data/pictures/.info
 #     in database:
 tgbot/data/database/*.db
 # Ignore audio library
