@@ -60,7 +60,7 @@ def delete_elder_user_data(num_of_elder: int, num_in_dir_for_user: int, user_id:
             num_of_elder -= 1
             # Get elder audio id from db for user
             elder_audio_id = sql_handler.get_elder_audio_tgid(user_id)
-            print('User with elder audio id:', elder_audio_id, 'deleted')
+            print(f"User's (id: {user_id}) elder audio with id: {elder_audio_id} deleted")
             # Delete elder input file for user
             delete_file_by_id(audio_input_path, elder_audio_id)
             # Delete elder output file for user

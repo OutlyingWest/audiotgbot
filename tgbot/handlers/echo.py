@@ -45,8 +45,10 @@ async def bot_echo_rest(message: types.Message, state: FSMContext):
         'Состояние:',
         hcode(state_name)
     ]
-
-    await message.answer('\n'.join(text))
+    try:
+        await message.answer('\n'.join(text))
+    except TypeError:
+        pass
 
 
 def register_echo(dp: Dispatcher):

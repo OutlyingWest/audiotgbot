@@ -1,3 +1,4 @@
+import json
 from aiogram import Dispatcher
 from aiogram.types import Message, ContentTypes
 from aiogram.types.message import ParseMode
@@ -9,8 +10,9 @@ from tgbot.misc import commands, answers
 from tgbot.handlers.users.handlers import sound
 from tgbot.data.manage.database.handler import SQLiteHandler
 
+from .json_decode import as_file
 
-async def user_start(message: Message):
+async def user_start(message: Message, state: FSMContext):
     user_id = message.from_user.id
     first_name = message.from_user.first_name
 
@@ -24,7 +26,8 @@ async def user_start(message: Message):
     sql_handler = SQLiteHandler(message)
     # Insert user data to table "users"
     sql_handler.insert_to_exiting_table('users', telegram_id=user_id, first_user_name=first_name)
-    await SoundStates.get_sound.set()
+    # await SoundStates.get_sound.set()
+    await state.set_state(SoundStates.get_sound)
 
 
 async def get_audio(message: Message, state: FSMContext):
@@ -33,15 +36,16 @@ async def get_audio(message: Message, state: FSMContext):
     audio_file = await message.audio.get_file()
     audio_id = message.audio.file_id
     async with state.proxy() as sound_data:
-        sound_data['file'] = audio_file
-        sound_data['id'] = str(audio_id)
+        sound_data['file'] = str(audio_file)
+        sound_data['id'] = audio_id
 
     load_complete_text = answers.get_answer(message, 'message_load_complete')
     await message.reply(load_complete_text)
 
     get_format_text = answers.get_answer(message, 'get_format_step')
     await message.answer(get_format_text)
-    await SoundStates.get_format.set()
+    await state.set_state(SoundStates.get_format)
+    # await SoundStates.get_format.set()
 
 
 async def get_voice(message: Message, state: FSMContext):
@@ -50,8 +54,9 @@ async def get_voice(message: Message, state: FSMContext):
     voice_file = await message.voice.get_file()
     voice_id = message.voice.file_id
     async with state.proxy() as sound_data:
-        sound_data['file'] = voice_file
-        sound_data['id'] = str(voice_id)
+        json_voice_file = json.dumps(voice_file.__dict__)
+        sound_data['file'] = json_voice_file
+        sound_data['id'] = voice_id
 
     load_complete_text = answers.get_answer(message, 'message_load_complete')
     await message.reply(load_complete_text)
@@ -59,7 +64,8 @@ async def get_voice(message: Message, state: FSMContext):
     get_format_text = answers.get_answer(message, 'get_format_step')
     await message.answer(get_format_text)
 
-    await SoundStates.get_format.set()
+    # await SoundStates.get_format.set()
+    await state.set_state(SoundStates.get_format)
 
 
 async def choose_format(message: Message, state: FSMContext):
@@ -70,7 +76,7 @@ async def choose_format(message: Message, state: FSMContext):
     await message.answer(conversion_in_progress_text)
 
     async with state.proxy() as sound_data:
-        audio_file = sound_data['file']
+        audio_file = json.loads(sound_data['file'], object_hook=as_file)
         audio_id = sound_data['id']
     output_audio = await sound.converse(message, audio_file, audio_id, sound_format)
     # Get file from InputFile object
@@ -87,7 +93,8 @@ async def choose_format(message: Message, state: FSMContext):
     get_sound_text = answers.get_answer(message, 'get_sound_step')
     await message.answer(get_sound_text)
     # Set next state
-    await SoundStates.get_sound.set()
+    # await SoundStates.get_sound.set()
+    await state.set_state(SoundStates.get_sound)
 
 
 async def bot_help(message: Message):
