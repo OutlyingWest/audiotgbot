@@ -1,13 +1,14 @@
 [Unit]
-Description=Course Bot
+Description=AudioBot
 After=network.target
+Wants=redis-server.service
 
 [Service]
-User=tgbot
-Group=tgbot
+User=user
+Group=group
 Type=simple
-WorkingDirectory=/opt/tgbot
-ExecStart=/opt/tgbot/venv/bin/python bot.py
+WorkingDirectory=/opt/audiotgbot
+ExecStart=/opt/audiotgbot/venv/bin/python3.9 -m bot
 Restart=always
 
 [Install]
